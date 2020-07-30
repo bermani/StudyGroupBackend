@@ -71,11 +71,13 @@ Parse.Cloud.define("iosPushTest", function(request, response) {
 });
 
 Parse.Cloud.define("updateCountEnrolled", async (request) => {
-  const userQuery = Parse.query("User")
+  const User = Parse.Object.extend("User");
+  const userQuery = new Parse.query(User)
   userQuery.equalTo("enrolled",request.params.courseId)
   const count = await userQuery.count()
 
-  const courseQuery = Parse.query("Course")
+  const Course = Parse.Object.extend(Course);
+  const courseQuery = new Parse.query(Course)
   const course = await courseQuery.get(request.params.courseId)
   course.set("enrolledCount", count)
   course.save()
