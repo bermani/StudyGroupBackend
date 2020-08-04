@@ -82,12 +82,12 @@ Parse.Cloud.define("updateCountEnrolled", async (request) => {
   return count;
 })
 
-// Parse.Cloud.beforeSave("TextPost", (request) => {
-//   const post = request.object
-//   const course = await post.get("course").fetch()
-//   const reports = post.get("reports")
-//   const ratio = reports.length / course.get("enrolledCount")
-//   if (ratio > 0.51) {
-//     post.destroy()
-//   }
-// })
+Parse.Cloud.beforeSave("TextPost", async (request) => {
+  const post = request.object
+  const course = await post.get("course").fetch()
+  const reports = post.get("reports")
+  const ratio = reports.length / course.get("enrolledCount")
+  if (ratio > 0.51) {
+    post.destroy()
+  }
+})
