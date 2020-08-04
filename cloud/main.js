@@ -86,8 +86,10 @@ Parse.Cloud.beforeSave("TextPost", async (request) => {
   const post = request.object
   const course = await post.get("course").fetch()
   const reports = post.get("reports")
-  const ratio = reports.length / course.get("enrolledCount")
-  if (ratio > 0.51) {
-    post.destroy()
+  if (reports) {
+    const ratio = reports.length / course.get("enrolledCount")
+    if (ratio > 0.51) {
+      post.destroy()
+    }
   }
 })
