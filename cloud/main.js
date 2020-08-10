@@ -93,3 +93,48 @@ Parse.Cloud.beforeSave("TextPost", async (request) => {
     }
   }
 })
+
+Parse.Cloud.job("reminders", async (request) => {
+  const userQuery = new Parse.Query("User");
+  userQuery.include("subscribedAssignments");
+  const users = await userQuery.find();
+  for (const user of users) {
+    const a = user.get("subscribedAssignments");
+    if (a && a.length > 0) {
+      const assignmentQuery = new Parse.Query("Assignment");
+      assignmentQuery.containedIn("objectId", a);
+      assignmentQuery.greaterThan("dueDate", new Date());
+      assignmentQuery.addAscending("dueDate");
+      const assignments = await assignmentQuery.find();
+      if (assignments && assignments.length > 0) {
+        let nextAssignment = assignments[0];
+        console.log(nextAssignment.get("title"));
+        const pushQuery = new Parse.Query(Parse.Installation);
+        pushQuery.matchesQuery("user", user);
+        Parse.Push.send(
+          {
+            where: {
+              deviceType: {
+                $in: ["ios", "android"],
+              },
+            },
+            data: {
+              title: "StudyGroup",
+              alert: `Your assignment "${nextAssignment.get(
+                "title"
+              )}" is coming up`,
+            },
+          },
+          { useMasterKey: true }
+        ).then(
+          function () {
+            console.log("yes");
+          },
+          function (error) {
+            console.log("no");
+          }
+        );
+      }
+    }
+  }
+});
