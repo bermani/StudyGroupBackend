@@ -94,6 +94,18 @@ Parse.Cloud.beforeSave("TextPost", async (request) => {
   }
 })
 
+Parse.Cloud.beforeSave("Assignment", async (request) => {
+  const post = request.object
+  const course = await post.get("course").fetch()
+  const reports = post.get("reportUsers")
+  if (reports) {
+    const ratio = reports.length / course.get("enrolledCount")
+    if (ratio > 0.51) {
+      post.destroy()
+    }
+  }
+})
+
 Parse.Cloud.job("reminders", async (request) => {
   const userQuery = new Parse.Query("User");
   userQuery.include("subscribedAssignments");
